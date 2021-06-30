@@ -3,7 +3,7 @@ This is a helper script to find when a user last ran a job within a particular p
 on a cluster platform that uses Slurm Workload Manager.
 
 ## ARCC
-ARCC is the Advanced Research Computing Center at the university of Wyoming.
+ARCC is the Advanced Research Computing Center at the University of Wyoming.
 
 Contact information can be found on our web page: https://www.uwyo.edu/arcc/
 
