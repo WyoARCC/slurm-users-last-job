@@ -254,7 +254,7 @@ LIST_OF_PROJECTS=$(get_list_of_projects_in_cluster "$CLUSTER")
 num_of_projects=0
 
 {
-  while IFS=, read -r project_name; do
+  while IFS=, read -r project_name || [ -n "$project_name" ]; do
     if [ -n "${project_name}" ]; then
       ((num_of_projects++))
       log "$num_of_projects: $project_name"
