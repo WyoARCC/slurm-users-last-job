@@ -56,7 +56,7 @@ project_name_3
 
 ### Example
 ```
-bash slurm-users-last-job -s 07/01/2021 -o july_2021.csv teton projects.txt
+bash slurm-users-last-job.sh -s 07/01/21 -o july_2021.csv teton projects.txt
 ```
 
 ## Issues
