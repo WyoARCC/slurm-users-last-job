@@ -28,7 +28,7 @@ It has been developed and tested on a platform using:
 `GNU bash, version 4.2.46(2)-release (x86_64-redhat-linux-gnu)`
 
 ## Usage
-`Usage: command [ -s START_DATE(MM/DD/YY) ] [ -o OUTPUT_FILENAME ] [-n] [-h] [-v] CLUSTER ACTIVE_PROJECT_FILE`
+`Usage: command [ -s START_DATE(MM/DD/YY) ] [ -o OUTPUT_FILENAME ] [-n] [-h] [-v] CLUSTER [ACTIVE_PROJECT_FILE]`
 
 Optional:
 
@@ -43,9 +43,12 @@ Optional:
 
 Required:
 * `CLUSTER` this is the name of a configured SSlurm cluster to check projects against.
+
+Optional:
 * `ACTIVE_PROJECT_FILE` this is the path/name to a file that lists the names of the 
   projects (or accounts using Slurm terminology) to check for users within against.
   It takes the format of listing one project per line.
+  If not defined then ALL active slurm accounts will be checked.
 
 Example:
 ```
@@ -54,9 +57,17 @@ project_name_2
 project_name_3
 ```
 
-### Example
+### Examples
 ```
 bash slurm-users-last-job.sh -s 07/01/21 -o july_2021.csv teton projects.txt
+
+bash slurm-users-last-job.sh -s 12/01/22 -o all_dec_2022.csv teton
+```
+
+### Errors
+If you use a date format of MM/DD/YYYY (instead of MM/DD/YY) then you will see the error of the following form:
+```
+Invalid time specification (pos=8): 12/01/2022
 ```
 
 ## Issues

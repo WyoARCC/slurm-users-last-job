@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-VERSION=0.1
+VERSION=0.2
 
 function err() {
   echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
@@ -26,7 +26,7 @@ function log() {
 }
 
 function usage() {
-  echo "Usage: command [ -s START_DATE(MM/DD/YY) ] [ -o OUTPUT_FILENAME ] [-n] [-h] [-v] CLUSTER ACTIVE_PROJECT_FILE" 1>&2
+  echo "Usage: command [ -s START_DATE(MM/DD/YY) ] [ -o OUTPUT_FILENAME ] [-n] [-h] [-v] CLUSTER [ACTIVE_PROJECT_FILE]" 1>&2
 }
 
 function exit_abnormal() {
@@ -190,8 +190,8 @@ function validate_options() {
   fi
 
   if [ -z "${ACTIVE_PROJECT_FILE}" ]; then
-    err "ERROR: An active project file value must be defined."
-    exit 1
+    err "WARNING: No active project file value must be defined. Will check against ALL accounts."
+    ALL_ACCOUNTS=1
   else
     if ! [ -e "${ACTIVE_PROJECT_FILE}" ]; then
       err "ERROR: The defined active project file '$ACTIVE_PROJECT_FILE' does not exist."
@@ -238,6 +238,7 @@ shift $(($OPTIND -1))
 
 CLUSTER=$1
 ACTIVE_PROJECT_FILE=$2
+ALL_ACCOUNTS=0
 validate_options
 
 log "Command Line Options:"
@@ -246,30 +247,41 @@ log "Cluster: $CLUSTER"
 log "Start Date: $START_DATE"
 log "Output Filename: $OUTPUT_FILENAME"
 log "Include headers in output: $COLUMN_HEADERS"
-
 log "- - - - - - - - -"
-log "Processing active project file:"
 
 LIST_OF_PROJECTS=$(get_list_of_projects_in_cluster "$CLUSTER")
 num_of_projects=0
 
-{
-  while IFS=, read -r project_name || [ -n "$project_name" ]; do
-    if [ -n "${project_name}" ]; then
-      ((num_of_projects++))
-      log "$num_of_projects: $project_name"
-
-      if [[ "$LIST_OF_PROJECTS" =~ .*"$project_name".* ]]; then
+if [[ "$ALL_ACCOUNTS" -eq 1 ]]; then
+  log "Checking ALL accounts."
+  {
+    while IFS=, read -r project_name || [ -n "$project_name" ]; do
+      if [ -n "${project_name}" ]; then
+        ((num_of_projects++))
+        log "$num_of_projects: $project_name"
         find_project_users "$CLUSTER" "$project_name"
-      else
-        err "WARNING: '$project_name' is not a valid project on cluster '$CLUSTER'."
       fi
-   fi
-  done
+    done
+    log "Processed $num_of_projects projects."
+  } <<< "$LIST_OF_PROJECTS"
+else
+  {
+    log "Processing active project file:"
+    while IFS=, read -r project_name || [ -n "$project_name" ]; do
+      if [ -n "${project_name}" ]; then
+        ((num_of_projects++))
+        log "$num_of_projects: $project_name"
 
-  log "Processed $num_of_projects projects."
-} < "$ACTIVE_PROJECT_FILE"
-
+        if [[ "$LIST_OF_PROJECTS" =~ .*"$project_name".* ]]; then
+          find_project_users "$CLUSTER" "$project_name"
+        else
+          err "WARNING: '$project_name' is not a valid project on cluster '$CLUSTER'."
+        fi
+      fi
+    done
+    log "Processed $num_of_projects projects."
+  } < "$ACTIVE_PROJECT_FILE"
+fi
 echo "$OUTPUT_RESULTS" | tee "$OUTPUT_FILENAME" >/dev/null
 log "Output results saved to $OUTPUT_FILENAME"
 log "Done."
